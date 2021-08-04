@@ -30,6 +30,7 @@ var regionCode = []string{"us-east-1",
 
 var regionRssMap = map[string][]string{}
 
+const serviceUrl string = "https://status.aws.amazon.com/"
 const urlPrefix string = "https://status.aws.amazon.com"
 
 func main() {
@@ -39,11 +40,12 @@ func main() {
 	// DEBUG
 	// pretty.Printf("--- m:\n%# v\n\n", regionRssMap)
 
-	GetPage("https://status.aws.amazon.com/")
+	GetPage(serviceUrl)
 	// GetPage("http://localhost/test.html")
+
+	printRssOnly()
 }
 
-// GetPage return void
 func GetPage(url string) {
 	doc, _ := goquery.NewDocument(url)
 	doc.Find("a").Each(func(_ int, selection *goquery.Selection) {
@@ -88,11 +90,21 @@ func GetPage(url string) {
 			regionRssMap["ap-east-1"] = append(regionRssMap["ap-east-1"], url)
 		}
 	})
+}
 
-	for key, value := range regionRssMap {
-		fmt.Println(key)
-		for _, value1 := range value {
-			fmt.Println("     " + value1)
-		}
+func print() {
+    for key, value := range regionRssMap {
+	fmt.Println(key)
+	for _, value1 := range value {
+		fmt.Println("     " + value1)
 	}
+    }
+}
+
+func printRssOnly() {
+    for _, value := range regionRssMap {
+	for _, value1 := range value {
+		fmt.Println(value1)
+	}
+    }
 }
