@@ -30,6 +30,8 @@ var regionCode = []string{"us-east-1",
 
 var regionRssMap = map[string][]string{}
 
+const urlPrefix string = "https://status.aws.amazon.com/rss/"
+
 func main() {
 	for _, value := range regionCode {
 		regionRssMap[value] = []string{}
@@ -49,8 +51,9 @@ func GetPage(url string) {
 	}
 	defer file.Close()
 	doc, _ := goquery.NewDocument(url)
-	doc.Find("a").Each(func(_ int, s *goquery.Selection) {
-		url, _ := s.Attr("href")
+	doc.Find("a").Each(func(_ int, selection *goquery.Selection) {
+		hrefVal, _ := selection.Attr("href")
+		url = urlPrefix + hrefVal
 		switch {
 		case strings.HasSuffix(url, "us-east-1.rss"):
 			regionRssMap["us-east-1"] = append(regionRssMap["us-east-1"], url)
