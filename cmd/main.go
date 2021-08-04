@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	_ "os"
 	"strings"
 
 	"github.com/PuerkitoBio/goquery"
