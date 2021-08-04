@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"os"
+	_ "os"
 	"strings"
 
 	"github.com/PuerkitoBio/goquery"
@@ -30,7 +30,7 @@ var regionCode = []string{"us-east-1",
 
 var regionRssMap = map[string][]string{}
 
-const urlPrefix string = "https://status.aws.amazon.com/rss/"
+const urlPrefix string = "https://status.aws.amazon.com"
 
 func main() {
 	for _, value := range regionCode {
@@ -45,11 +45,6 @@ func main() {
 
 // GetPage return void
 func GetPage(url string) {
-	file, err := os.Create("output_rss.txt")
-	if err != nil {
-		fmt.Println("error")
-	}
-	defer file.Close()
 	doc, _ := goquery.NewDocument(url)
 	doc.Find("a").Each(func(_ int, selection *goquery.Selection) {
 		hrefVal, _ := selection.Attr("href")
@@ -95,11 +90,9 @@ func GetPage(url string) {
 	})
 
 	for key, value := range regionRssMap {
-		file.WriteString(key + "\r\n")
+		fmt.Println(key)
 		for _, value1 := range value {
-			file.WriteString("     " + value1 + "\r\n")
+			fmt.Println("     " + value1)
 		}
 	}
-
-	// pretty.Printf("--- m:\n%# v\n\n", regionRssMap)
 }
