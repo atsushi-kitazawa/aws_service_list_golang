@@ -19,13 +19,15 @@ var regionCode = []string{"us-east-1",
 	"eu-west-2",
 	"eu-west-3",
 	"eu-north-1",
+	"eu-south-1",
 	"me-south-1",
 	"ap-southeast-1",
 	"ap-northeast-1",
 	"ap-southeast-2",
 	"ap-northeast-2",
 	"ap-south-1",
-	"ap-east-1"}
+	"ap-east-1",
+	"af-south-1"}
 
 var regionRssMap = map[string][]string{}
 
@@ -55,7 +57,7 @@ func parseAmazonStatusPage() {
 		case strings.HasSuffix(url, "us-east-2.rss"):
 			regionRssMap["us-east-2"] = append(regionRssMap["us-east-2"], url)
 		case strings.HasSuffix(url, "us-west-2.rss"):
-			regionRssMap["us-west-2"] = append(regionRssMap["us-west-1"], url)
+			regionRssMap["us-west-2"] = append(regionRssMap["us-west-2"], url)
 		case strings.HasSuffix(url, "us-west-1.rss"):
 			regionRssMap["us-west-1"] = append(regionRssMap["us-west-1"], url)
 		case strings.HasSuffix(url, "ca-central-1.rss"):
@@ -72,6 +74,8 @@ func parseAmazonStatusPage() {
 			regionRssMap["eu-west-3"] = append(regionRssMap["eu-west-3"], url)
 		case strings.HasSuffix(url, "eu-north-1.rss"):
 			regionRssMap["eu-north-1"] = append(regionRssMap["eu-north-1"], url)
+		case strings.HasSuffix(url, "eu-south-1.rss"):
+			regionRssMap["eu-south-1"] = append(regionRssMap["eu-south-1"], url)
 		case strings.HasSuffix(url, "me-south-1.rss"):
 			regionRssMap["me-south-1"] = append(regionRssMap["me-south-1"], url)
 		case strings.HasSuffix(url, "ap-southeast-1.rss"):
@@ -86,6 +90,8 @@ func parseAmazonStatusPage() {
 			regionRssMap["ap-south-1"] = append(regionRssMap["ap-south-1"], url)
 		case strings.HasSuffix(url, "ap-east-1.rss"):
 			regionRssMap["ap-east-1"] = append(regionRssMap["ap-east-1"], url)
+		case strings.HasSuffix(url, "af-south-1.rss"):
+			regionRssMap["af-south-1"] = append(regionRssMap["af-south-1"], url)
 		}
 	})
 }
