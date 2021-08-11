@@ -3,10 +3,13 @@ package main
 import (
 	"fmt"
 	"strings"
+	"flag"
 
 	"github.com/PuerkitoBio/goquery"
 	// "github.com/kr/pretty"
 )
+
+var t string
 
 var regionCode = []string{"us-east-1",
 	"us-east-2",
@@ -35,15 +38,28 @@ const serviceUrl string = "https://status.aws.amazon.com/"
 const rssUrlPrefix string = "https://status.aws.amazon.com"
 
 func main() {
+	initRegionMap()
+
+	flag.StringVar(&t, "t", "status", "outpu type.")
+	flag.Parse()
+
+	switch t {
+	case "status":
+		parseAmazonStatusPage()
+		printRssOnly()
+	case "hoge":
+		fmt.Println("hoge")
+	default:
+		fmt.Println("Please speficy type parameter.")
+	}
+
+}
+
+func initRegionMap() {
 	for _, value := range regionCode {
 		regionRssMap[value] = []string{}
 	}
-	// DEBUG
-	// pretty.Printf("--- m:\n%# v\n\n", regionRssMap)
 
-	parseAmazonStatusPage()
-
-	printRssOnly()
 }
 
 func parseAmazonStatusPage() {
