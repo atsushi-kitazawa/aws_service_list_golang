@@ -39,7 +39,7 @@ func scrapingDashboard(ctx context.Context, region string) {
 		chromedp.Navigate(URL),
 		chromedp.Click(element, chromedp.NodeVisible),
 		chromedp.Click(`document.querySelector("#status-history-table > div.awsui_footer_14iqq_1dn1p_75 > div > div > div > a")`, chromedp.ByJSPath),
-		chromedp.Sleep(5*time.Second),
+		chromedp.Sleep(15*time.Second),
 		chromedp.Nodes(`.status-history-rss-feed-button`, &nodes, chromedp.BySearch),
 	)
 	if err != nil {
