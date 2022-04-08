@@ -1,108 +1,53 @@
 package main
 
 import (
+	"context"
 	"fmt"
-	"strings"
+	"time"
 
-	"github.com/PuerkitoBio/goquery"
-	// "github.com/kr/pretty"
+	"github.com/chromedp/cdproto/cdp"
+	"github.com/chromedp/chromedp"
 )
 
-var regionCode = []string{"us-east-1",
-	"us-east-2",
-	"us-west-2",
-	"us-west-1",
-	"ca-central-1",
-	"sa-east-1",
-	"eu-west-1",
-	"eu-central-1",
-	"eu-west-2",
-	"eu-west-3",
-	"eu-north-1",
-	"me-south-1",
-	"ap-southeast-1",
-	"ap-northeast-1",
-	"ap-southeast-2",
-	"ap-northeast-2",
-	"ap-south-1",
-	"ap-east-1"}
+const URL string = "https://health.aws.amazon.com/health/status"
 
-var regionRssMap = map[string][]string{}
+var regions []string = []string{"NA", "SA", "EU", "AF", "AP", "ME"}
 
-const serviceUrl string = "https://status.aws.amazon.com/"
-const rssUrlPrefix string = "https://status.aws.amazon.com"
+// var wg sync.WaitGroup
 
 func main() {
-	for _, value := range regionCode {
-		regionRssMap[value] = []string{}
-	}
-	// DEBUG
-	// pretty.Printf("--- m:\n%# v\n\n", regionRssMap)
-
-	parseAmazonStatusPage()
-
-	printRssOnly()
+	doMain()
 }
 
-func parseAmazonStatusPage() {
-	doc, _ := goquery.NewDocument(serviceUrl)
-	doc.Find("a").Each(func(_ int, selection *goquery.Selection) {
-		hrefVal, _ := selection.Attr("href")
-		url := rssUrlPrefix + hrefVal
-		switch {
-		case strings.HasSuffix(url, "us-east-1.rss"):
-			regionRssMap["us-east-1"] = append(regionRssMap["us-east-1"], url)
-		case strings.HasSuffix(url, "us-east-2.rss"):
-			regionRssMap["us-east-2"] = append(regionRssMap["us-east-2"], url)
-		case strings.HasSuffix(url, "us-west-2.rss"):
-			regionRssMap["us-west-2"] = append(regionRssMap["us-west-1"], url)
-		case strings.HasSuffix(url, "us-west-1.rss"):
-			regionRssMap["us-west-1"] = append(regionRssMap["us-west-1"], url)
-		case strings.HasSuffix(url, "ca-central-1.rss"):
-			regionRssMap["ca-central-1"] = append(regionRssMap["ca-central-1"], url)
-		case strings.HasSuffix(url, "sa-east-1.rss"):
-			regionRssMap["sa-east-1"] = append(regionRssMap["sa-east-1"], url)
-		case strings.HasSuffix(url, "eu-west-1.rss"):
-			regionRssMap["eu-west-1"] = append(regionRssMap["eu-west-1"], url)
-		case strings.HasSuffix(url, "eu-central-1.rss"):
-			regionRssMap["eu-central-1"] = append(regionRssMap["eu-central-1"], url)
-		case strings.HasSuffix(url, "eu-west-2.rss"):
-			regionRssMap["eu-west-2"] = append(regionRssMap["eu-west-2"], url)
-		case strings.HasSuffix(url, "eu-west-3.rss"):
-			regionRssMap["eu-west-3"] = append(regionRssMap["eu-west-3"], url)
-		case strings.HasSuffix(url, "eu-north-1.rss"):
-			regionRssMap["eu-north-1"] = append(regionRssMap["eu-north-1"], url)
-		case strings.HasSuffix(url, "me-south-1.rss"):
-			regionRssMap["me-south-1"] = append(regionRssMap["me-south-1"], url)
-		case strings.HasSuffix(url, "ap-southeast-1.rss"):
-			regionRssMap["ap-southeast-1"] = append(regionRssMap["ap-southeast-1"], url)
-		case strings.HasSuffix(url, "ap-northeast-1.rss"):
-			regionRssMap["ap-northeast-1"] = append(regionRssMap["ap-northeast-1"], url)
-		case strings.HasSuffix(url, "ap-southeast-2.rss"):
-			regionRssMap["ap-southeast-2"] = append(regionRssMap["ap-southeast-2"], url)
-		case strings.HasSuffix(url, "ap-northeast-2.rss"):
-			regionRssMap["ap-northeast-2"] = append(regionRssMap["ap-northeast-2"], url)
-		case strings.HasSuffix(url, "ap-south-1.rss"):
-			regionRssMap["ap-south-1"] = append(regionRssMap["ap-south-1"], url)
-		case strings.HasSuffix(url, "ap-east-1.rss"):
-			regionRssMap["ap-east-1"] = append(regionRssMap["ap-east-1"], url)
-		}
-	})
+func doMain() {
+	ctx, cancel := chromedp.NewContext(context.Background())
+	defer cancel()
+
+	// wg.Add(2)
+	for _, r := range regions {
+		scrapingDashboard(ctx, r)
+	}
+	// wg.Wait()
+
 }
 
-func print() {
-    for key, value := range regionRssMap {
-	fmt.Println(key)
-	for _, value1 := range value {
-		fmt.Println("     " + value1)
+func scrapingDashboard(ctx context.Context, region string) {
+	// defer wg.Done()
+	element := fmt.Sprintf("[href='%s']", region)
+	var nodes []*cdp.Node
+	err := chromedp.Run(ctx,
+		chromedp.Navigate(URL),
+		chromedp.Click(element, chromedp.NodeVisible),
+		chromedp.Click(`document.querySelector("#status-history-table > div.awsui_footer_14iqq_1dn1p_75 > div > div > div > a")`, chromedp.ByJSPath),
+		chromedp.Sleep(5*time.Second),
+		chromedp.Nodes(`.status-history-rss-feed-button`, &nodes, chromedp.BySearch),
+	)
+	if err != nil {
+		panic(err)
 	}
-    }
-}
-
-func printRssOnly() {
-    for _, value := range regionRssMap {
-	for _, value1 := range value {
-		fmt.Println(value1)
+	// fmt.Println("===== " + region + " =====")
+	// fmt.Println(len(nodes))
+	for i, _ := range nodes {
+		fmt.Println(nodes[i].Attributes[3])
 	}
-    }
 }
