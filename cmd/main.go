@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"sync"
 	"time"
 
 	"github.com/chromedp/cdproto/cdp"
@@ -11,9 +12,11 @@ import (
 
 const URL string = "https://health.aws.amazon.com/health/status"
 
-var regions []string = []string{"NA", "SA", "EU", "AF", "AP", "ME"}
-
-// var wg sync.WaitGroup
+var (
+	regions []string = []string{"NA", "SA", "EU", "AF", "AP", "ME"}
+	wg      sync.WaitGroup
+	mu      sync.Mutex
+)
 
 func main() {
 	doMain()
@@ -23,16 +26,17 @@ func doMain() {
 	ctx, cancel := chromedp.NewContext(context.Background())
 	defer cancel()
 
-	// wg.Add(2)
+	wg.Add(len(regions))
 	for _, r := range regions {
-		scrapingDashboard(ctx, r)
+		subCtx, _ := chromedp.NewContext(ctx)
+		go scrapingDashboard(subCtx, r)
 	}
-	// wg.Wait()
+	wg.Wait()
 
 }
 
 func scrapingDashboard(ctx context.Context, region string) {
-	// defer wg.Done()
+	defer wg.Done()
 	element := fmt.Sprintf("[href='%s']", region)
 	var nodes []*cdp.Node
 	err := chromedp.Run(ctx,
@@ -45,6 +49,14 @@ func scrapingDashboard(ctx context.Context, region string) {
 	if err != nil {
 		panic(err)
 	}
+
+	print(nodes)
+}
+
+func print(nodes []*cdp.Node) {
+	mu.Lock()
+	defer mu.Unlock()
+
 	// fmt.Println("===== " + region + " =====")
 	// fmt.Println(len(nodes))
 	for i, _ := range nodes {
