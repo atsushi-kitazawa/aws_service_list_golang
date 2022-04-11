@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"flag"
 	"fmt"
 	"sync"
 	"time"
@@ -16,9 +17,16 @@ var (
 	regions []string = []string{"NA", "SA", "EU", "AF", "AP", "ME"}
 	wg      sync.WaitGroup
 	mu      sync.Mutex
+	wait    int
 )
 
+func init() {
+	flag.IntVar(&wait, "wait", 30, "time to wait for page to load.")
+	flag.Parse()
+}
+
 func main() {
+	// fmt.Printf("wait=%v\n", wait)
 	doMain()
 }
 
@@ -43,7 +51,7 @@ func scrapingDashboard(ctx context.Context, region string) {
 		chromedp.Navigate(URL),
 		chromedp.Click(element, chromedp.NodeVisible),
 		chromedp.Click(`document.querySelector("#status-history-table > div.awsui_footer_14iqq_1dn1p_75 > div > div > div > a")`, chromedp.ByJSPath),
-		chromedp.Sleep(15*time.Second),
+		chromedp.Sleep(time.Duration(wait)*time.Second),
 		chromedp.Nodes(`.status-history-rss-feed-button`, &nodes, chromedp.BySearch),
 	)
 	if err != nil {
